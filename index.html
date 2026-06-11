@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>全日本自家焙煎珈琲店データベース</title>
+<title>日本自家焙煎珈琲店データベース</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -39,8 +39,11 @@ nav a:hover{color:var(--gold);}
 .stat-label{font-family:var(--sans);font-size:10px;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;}
 
 /* SEARCH */
-.search-section{padding:1.4rem 2rem;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:90;box-shadow:0 2px 12px rgba(160,120,70,.06);}
-.search-inner{max-width:1100px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.search-section{padding:.7rem 2rem;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:90;box-shadow:0 2px 12px rgba(160,120,70,.06);}
+.search-wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:.5rem;}
+.search-row1{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.search-row2{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.search-inner{max-width:1100px;margin:0 auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 .search-box{flex:1;min-width:200px;position:relative;}
 .search-box input{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--serif);font-size:15px;padding:9px 16px 9px 38px;border-radius:4px;outline:none;transition:border-color .2s;}
 .search-box input::placeholder{color:var(--text-dim);}
@@ -272,7 +275,7 @@ footer a:hover{color:var(--gold);}
 
 <section class="hero">
   <p class="hero-eyebrow">roastia</p>
-  <h1>全日本自家焙煎珈琲店<br><em>データベース</em></h1>
+  <h1>日本自家焙煎珈琲店<br><em>データベース</em></h1>
   <p class="hero-sub">日本全国の自家焙煎珈琲店を、ひとつの地図に。<br>現在地・住所から徒歩圏内のロースターを探せる、<br>日本最大級の自家焙煎珈琲店データベース。</p>
   <div class="hero-stats">
     <div><span class="stat-num" id="stat-total">—</span><span class="stat-label">掲載店舗数</span></div>
@@ -282,39 +285,40 @@ footer a:hover{color:var(--gold);}
 </section>
 
 <section class="search-section">
-  <div class="search-inner">
-    <div class="search-box">
-      <span class="search-icon">⌕</span>
-      <input type="text" id="search-input" placeholder="店舗名・住所・キーワードで検索…" oninput="filterShops()">
+  <div class="search-wrap">
+    <!-- 1行目: キーワード・都道府県・ラジオ・件数 -->
+    <div class="search-row1">
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="search-input" placeholder="店舗名・住所・キーワードで検索…" oninput="filterShops()">
+      </div>
+      <select class="filter-select" id="pref-filter" onchange="filterShops()">
+        <option value="">全都道府県</option>
+      </select>
+      <div class="cafe-radio">
+        <label class="radio-label"><input type="radio" name="cafe" value="" checked onchange="setCafeFilter('')"> すべて</label>
+        <label class="radio-label"><input type="radio" name="cafe" value="cafe" onchange="setCafeFilter('cafe')"> 座席あり</label>
+        <label class="radio-label"><input type="radio" name="cafe" value="nocafe" onchange="setCafeFilter('nocafe')"> 座席なし</label>
+      </div>
+      <div class="result-count"><strong id="count-display">0</strong> 件表示中</div>
     </div>
-    <select class="filter-select" id="pref-filter" onchange="filterShops()">
-      <option value="">全都道府県</option>
-    </select>
-    <div class="cafe-radio">
-      <label class="radio-label"><input type="radio" name="cafe" value="" checked onchange="setCafeFilter('')"> すべて</label>
-      <label class="radio-label"><input type="radio" name="cafe" value="cafe" onchange="setCafeFilter('cafe')"> 座席あり</label>
-      <label class="radio-label"><input type="radio" name="cafe" value="nocafe" onchange="setCafeFilter('nocafe')"> 座席なし</label>
+    <!-- 2行目: 現在地・住所検索・徒歩フィルター -->
+    <div class="search-row2">
+      <button class="btn-locate" id="btn-locate" onclick="toggleLocate()">◎ 現在地</button>
+      <div class="addr-search">
+        <input class="addr-input" id="addr-input" type="text" placeholder="住所・駅名・スポット名で検索… 例: 渋谷駅" onkeydown="if(event.key==='Enter')geocodeAddress()">
+        <button class="btn-addr" onclick="geocodeAddress()">この場所から探す</button>
+      </div>
+      <div class="walk-filters" id="walk-filters">
+        <span class="walk-label">徒歩</span>
+        <button class="btn-walk" data-min="5"  onclick="setWalkFilter(5)">5分</button>
+        <button class="btn-walk" data-min="10" onclick="setWalkFilter(10)">10分</button>
+        <button class="btn-walk" data-min="15" onclick="setWalkFilter(15)">15分</button>
+        <button class="btn-walk" data-min="30" onclick="setWalkFilter(30)">30分</button>
+        <button class="btn-walk active" data-min="0" onclick="setWalkFilter(0)">全表示</button>
+      </div>
+      <span class="location-status" id="location-status"></span>
     </div>
-    <div class="result-count"><strong id="count-display">0</strong> 件表示中</div>
-  </div>
-
-  <!-- 位置情報バー -->
-  <div class="location-bar">
-    <button class="btn-locate" id="btn-locate" onclick="toggleLocate()">◎ 現在地</button>
-    <span class="loc-sep">or</span>
-    <div class="addr-search">
-      <input class="addr-input" id="addr-input" type="text" placeholder="住所・駅名・スポット名で検索… 例: 渋谷駅" onkeydown="if(event.key==='Enter')geocodeAddress()">
-      <button class="btn-addr" onclick="geocodeAddress()">この場所から探す</button>
-    </div>
-    <div class="walk-filters" id="walk-filters">
-      <span class="walk-label">徒歩</span>
-      <button class="btn-walk" data-min="5"  onclick="setWalkFilter(5)">5分</button>
-      <button class="btn-walk" data-min="10" onclick="setWalkFilter(10)">10分</button>
-      <button class="btn-walk" data-min="15" onclick="setWalkFilter(15)">15分</button>
-      <button class="btn-walk" data-min="30" onclick="setWalkFilter(30)">30分</button>
-      <button class="btn-walk active" data-min="0" onclick="setWalkFilter(0)">全表示</button>
-    </div>
-    <span class="location-status" id="location-status"></span>
   </div>
 </section>
 
